@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import ChatList from '../components/ChatList';
-import ChatWindow from '../components/ChatWindow';
+import ChatView from '../components/ChatView';
 import Welcome from '../components/Welcome';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -54,7 +54,7 @@ const ChatPage = () => {
       </div>
       <div className="w-3/4 flex flex-col">
         {selectedChatId ? (
-          <ChatWindow key={selectedChatId} chatId={selectedChatId} />
+          <ChatView key={selectedChatId} chatId={selectedChatId} />
         ) : (
           <Welcome />
         )}
