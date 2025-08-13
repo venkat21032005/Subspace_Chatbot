@@ -1,29 +1,28 @@
 import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { useMessages } from '../hooks/useMessages';
 import MessageBubble from './MessageBubble';
 import MessageInput from './MessageInput';
+import Welcome from './Welcome'; // Assuming Welcome component exists for the initial screen
 
-const ChatView = React.memo(({ chat }) => {
-  const { messages, loading, error, sendMessage, sendingMessage } = useMessages(chat?.id);
+const ChatView = React.memo(({ chatId }) => {
+  const { messages, chat, loading, error, sendMessage, sendingMessage } = useMessages(chatId);
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const shouldAutoScrollRef = useRef(true);
 
-  // Memoize messages to prevent unnecessary re-renders
   const memoizedMessages = useMemo(() => messages, [messages]);
 
-  // Auto-scroll to bottom when new messages arrive, but only if user is at bottom
   useEffect(() => {
     if (shouldAutoScrollRef.current && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [memoizedMessages]);
 
-  // Track if user is scrolled to bottom
   const handleScroll = useCallback(() => {
     if (messagesContainerRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10; // 10px threshold
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
       shouldAutoScrollRef.current = isAtBottom;
     }
   }, []);
@@ -31,93 +30,51 @@ const ChatView = React.memo(({ chat }) => {
   const handleSendMessage = async (content) => {
     try {
       await sendMessage(content);
-      // The message will appear via subscription
     } catch (error) {
       console.error('Failed to send message:', error);
       throw error;
     }
   };
 
-  if (!chat) {
+  // Case: Navigated to a chat ID but data is not loaded yet
+  if (loading && !chat) {
     return (
-      <div className="chat-main">
-        <div className="chat-header">
-          <h2>Chatbot Application</h2>
-          <p style={{ color: '#666', fontSize: '0.875rem' }}>
-            Select a chat or create a new one to start chatting
-          </p>
-        </div>
-        <div className="chat-messages">
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100%',
-            color: '#666',
-            textAlign: 'center',
-            flexDirection: 'column',
-            gap: '1rem',
-          }}>
-            <div style={{ fontSize: '3rem', opacity: 0.3 }}>💬</div>
-            <div>
-              <h3 style={{ margin: 0, marginBottom: '0.5rem' }}>Welcome to your AI Chatbot!</h3>
-              <p>Create a new chat or select an existing one to start a conversation.</p>
-            </div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-400">Loading chat...</p>
+      </div>
+    );
+  }
+
+  // Case: No chat selected at all
+  if (!chatId || !chat) {
+    return <Welcome />;
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-full text-red-500">
+        <p>Error: {error.message}</p>
       </div>
     );
   }
 
   return (
-    <div className="chat-main">
-      <div className="chat-header">
-        <h2>{chat.title}</h2>
-        <p style={{ color: '#666', fontSize: '0.875rem' }}>
-          Chat with AI Assistant • {messages.length} messages
-        </p>
+    <div className="flex flex-col h-full bg-gray-900">
+      <div className="p-4 border-b border-gray-700 shadow-md">
+        <h2 className="text-xl font-bold">{chat.title}</h2>
+        <p className="text-sm text-gray-400">{memoizedMessages.length} messages</p>
       </div>
-      
-      <div 
-        className="chat-messages"
+
+      <div
+        className="flex-grow p-4 overflow-y-auto"
         ref={messagesContainerRef}
         onScroll={handleScroll}
       >
-        {loading && messages.length === 0 ? (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100%' 
-          }}>
-            <div>Loading messages...</div>
-          </div>
-        ) : error ? (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100%',
-            color: '#e74c3c'
-          }}>
-            <div>Error loading messages: {error.message}</div>
-          </div>
-        ) : messages.length === 0 ? (
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '100%',
-            color: '#666',
-            textAlign: 'center',
-            flexDirection: 'column',
-            gap: '1rem',
-          }}>
-            <div style={{ fontSize: '2rem', opacity: 0.3 }}>🤖</div>
-            <div>
-              <h4 style={{ margin: 0, marginBottom: '0.5rem' }}>Start a conversation!</h4>
-              <p>Send your first message to begin chatting with the AI assistant.</p>
-            </div>
+        {memoizedMessages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500">
+            <div className="text-4xl mb-4">ðŸ¤–</div>
+            <h3 className="text-lg font-semibold">Start a conversation!</h3>
+            <p>Send your first message to begin chatting.</p>
           </div>
         ) : (
           <>
@@ -128,10 +85,10 @@ const ChatView = React.memo(({ chat }) => {
           </>
         )}
       </div>
-      
-      <div className="chat-input">
-        <MessageInput 
-          onSendMessage={handleSendMessage} 
+
+      <div className="p-4 border-t border-gray-700">
+        <MessageInput
+          onSendMessage={handleSendMessage}
           disabled={sendingMessage}
           placeholder={sendingMessage ? 'Sending...' : 'Type your message...'}
         />
