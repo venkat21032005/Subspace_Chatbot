@@ -20,7 +20,7 @@ A production-ready, enterprise-grade chatbot application built with modern web t
 
 ##  Architecture
 
-`
+```
 Frontend (React + TypeScript)
      GraphQL
 Hasura GraphQL Engine
@@ -30,7 +30,7 @@ n8n Workflow Engine
 OpenRouter (AI Models)
      Response
 Database (PostgreSQL)
-`
+```
 
 ### Technology Stack
 - **Frontend**: React 18, TypeScript, Material-UI
@@ -51,9 +51,9 @@ Database (PostgreSQL)
 
 ### 1. Environment Configuration
 
-Create a .env file in the root directory:
+Create a `.env` file in the root directory:
 
-`ash
+```bash
 # Nhost Configuration
 REACT_APP_NHOST_SUBDOMAIN=your-nhost-subdomain
 REACT_APP_NHOST_REGION=your-nhost-region
@@ -68,13 +68,13 @@ REACT_APP_OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
 # n8n Webhook URL
 REACT_APP_N8N_WEBHOOK_URL=https://your-n8n-instance.com/webhook/chatbot
-`
+```
 
 ### 2. Database Schema Setup
 
 Run these SQL commands in your Hasura console:
 
-`sql
+```sql
 -- Create chats table
 CREATE TABLE chats (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -125,13 +125,13 @@ CREATE POLICY "Users can insert messages in own chats" ON messages
 CREATE INDEX idx_chats_user_id ON chats(user_id);
 CREATE INDEX idx_messages_chat_id ON messages(chat_id);
 CREATE INDEX idx_chats_updated_at ON chats(updated_at DESC);
-`
+```
 
 ### 3. Hasura Action Setup
 
 Create a custom action in Hasura:
 
-`yaml
+```yaml
 # Action: sendMessage
 Name: sendMessage
 Type: mutation
@@ -146,7 +146,7 @@ Fields:
   - success: Boolean!
   - message: String
   - response: String
-`
+```
 
 ### 4. n8n Workflow Setup
 
@@ -160,37 +160,36 @@ Create an n8n workflow with these nodes:
 
 ### 5. Install Dependencies
 
-`ash
+```bash
 npm install
-`
+```
 
 ### 6. Start Development Server
 
-`ash
+```bash
 npm start
-`
+```
 
 ##  Deployment
 
 ### Netlify Deployment
 
 1. **Build the application**:
-   `ash
+   ```bash
    npm run build
-   `
+   ```
 
 2. **Deploy to Netlify**:
-   `ash
+   ```bash
    npm run deploy
-   `
+   ```
 
 3. **Configure environment variables** in Netlify dashboard
 
 ### Manual Deployment
 
-1. Build the application: 
-pm run build
-2. Upload uild/ folder to your hosting provider
+1. Build the application: `npm run build`
+2. Upload `build/` folder to your hosting provider
 3. Configure environment variables
 4. Set up custom domain (optional)
 
@@ -211,7 +210,7 @@ pm run build
 
 ##  Testing
 
-`ash
+```bash
 # Run tests
 npm test
 
@@ -220,7 +219,7 @@ npm test -- --coverage
 
 # Run tests in watch mode
 npm test -- --watch
-`
+```
 
 ##  Performance
 
@@ -233,22 +232,16 @@ npm test -- --watch
 
 ### Available Scripts
 
-- 
-pm start - Start development server
-- 
-pm run build - Build for production
-- 
-pm test - Run test suite
-- 
-pm run eject - Eject from Create React App
-- 
-pm run codegen - Generate GraphQL types
-- 
-pm run deploy - Deploy to Netlify
+- `npm start` - Start development server
+- `npm run build` - Build for production
+- `npm test` - Run test suite
+- `npm run eject` - Eject from Create React App
+- `npm run codegen` - Generate GraphQL types
+- `npm run deploy` - Deploy to Netlify
 
 ### Project Structure
 
-`
+```
 src/
  components/          # React components
     AuthPage.tsx    # Authentication interface
@@ -261,7 +254,7 @@ src/
     nhost.ts        # Nhost client configuration
  App.tsx             # Main application component
  index.tsx           # Application entry point
-`
+```
 
 ##  Advanced Features
 
