@@ -7,31 +7,15 @@ const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
 
-  // Handle error state
-  if (error) {
-    console.error('Error in ChatList:', error);
-    // Optionally show an error message to the user
-    return (
-      <div className="p-4 text-red-500">
-        Error loading chats. Please try refreshing the page.
-      </div>
-    );
-  }
-
-  // Handle loading state
-  if (loading && chats.length === 0) {
-    return <div className="p-4 text-gray-500">Loading chats...</div>;
-  }
-
   const handleCreateChat = async () => {
     setCreatingChat(true);
     try {
-      const newChat = await createChat();
+      const newChat = await createChat({ variables: { title: 'New Chat' } });
       if (newChat && onNewChat) {
-        onNewChat(newChat);
+        onNewChat(newChat.data.insert_chats_one);
       }
-    } catch (error) {
-      console.error("Failed to create chat:", error);
+    } catch (err) {
+      console.error('Error creating chat:', err);
     } finally {
       setCreatingChat(false);
     }
@@ -103,95 +87,43 @@ const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
     }
   };
 
-  if (loading) {
-    return (
-      <div style={{ padding: "1rem" }}>
-        <div>Loading chats...</div>
-      </div>
-    );
+  if (error) {
+    return <div className="p-4 text-red-500">Error loading chats.</div>;
   }
 
-  if (error) {
-    return (
-      <div style={{ padding: "1rem", color: "#e74c3c" }}>
-        <div>Error loading chats: {error.message}</div>
-      </div>
-    );
+  if (loading && chats.length === 0) {
+    return <div className="p-4 text-gray-400">Loading chats...</div>;
   }
 
   return (
-    <div>
-      <div style={{ padding: "1rem", borderBottom: "1px solid #e0e0e0" }}>
+    <div className="flex flex-col h-full">
+      <div className="p-4 border-b border-gray-700">
         <button
           onClick={handleCreateChat}
           disabled={creatingChat}
-          style={{
-            width: "100%",
-            padding: "0.75rem",
-            background: "#667eea",
-            color: "white",
-            border: "none",
-            borderRadius: "5px",
-            cursor: creatingChat ? "not-allowed" : "pointer",
-            fontSize: "0.875rem",
-            fontWeight: "500",
-          }}
+          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {creatingChat ? "Creating..." : "+ New Chat"}
+          {creatingChat ? 'Creating...' : '+ New Chat'}
         </button>
       </div>
 
-      <div style={{ maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}>
+      <div className="flex-grow overflow-y-auto">
         {chats.length === 0 ? (
-          <div style={{ padding: "1rem", textAlign: "center", color: "#666" }}>
+          <div className="p-4 text-center text-gray-400">
             <p>No chats yet.</p>
-            <p style={{ fontSize: "0.875rem", marginTop: "0.5rem" }}>
-              Create your first chat to get started!
-            </p>
+            <p className="text-sm mt-2">Create your first chat to get started!</p>
           </div>
         ) : (
-          chats.map((chat) => (
-            <div
-              key={chat.id}
-              onClick={() => onChatSelect && onChatSelect(chat)}
-              style={{
-                padding: "1rem",
-                borderBottom: "1px solid #f0f0f0",
-                cursor: "pointer",
-                backgroundColor:
-                  selectedChatId === chat.id ? "#f8f9fa" : "transparent",
-                borderLeft:
-                  selectedChatId === chat.id
-                    ? "3px solid #667eea"
-                    : "3px solid transparent",
-                transition: "background-color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                if (selectedChatId !== chat.id) {
-                  e.target.style.backgroundColor = "#f8f9fa";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedChatId !== chat.id) {
-                  e.target.style.backgroundColor = "transparent";
-                }
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "flex-start",
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
+          <ul>
+            {chats.map((chat) => (
+              <li key={chat.id}>
+                <button
+                  onClick={() => onChatSelect(chat.id)}
+                  className={`w-full text-left p-4 transition-colors duration-200 ${selectedChatId === chat.id ? 'bg-gray-700' : 'hover:bg-gray-800'}`}
+                >
                   {editingChatId === chat.id ? (
                     <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                      }}
+                      className="flex items-center gap-2"
                     >
                       <input
                         type="text"
@@ -200,107 +132,40 @@ const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
                         onKeyDown={(e) => handleKeyPress(e, chat.id)}
                         onClick={(e) => e.stopPropagation()}
                         autoFocus
-                        style={{
-                          flex: 1,
-                          padding: "0.25rem 0.5rem",
-                          fontSize: "0.875rem",
-                          border: "1px solid #667eea",
-                          borderRadius: "3px",
-                          outline: "none",
-                        }}
+                        className="flex-1 p-2 text-sm border border-gray-400 rounded"
                       />
                       <button
                         onClick={(e) => handleSaveTitle(chat.id, e)}
-                        style={{
-                          background: "#28a745",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "3px",
-                          padding: "0.25rem 0.5rem",
-                          fontSize: "0.75rem",
-                          cursor: "pointer",
-                        }}
+                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
                       >
                         ✓
                       </button>
                       <button
                         onClick={handleCancelEdit}
-                        style={{
-                          background: "#dc3545",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "3px",
-                          padding: "0.25rem 0.5rem",
-                          fontSize: "0.75rem",
-                          cursor: "pointer",
-                        }}
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
                       >
                         ✕
                       </button>
                     </div>
                   ) : (
                     <>
-                      <h4
-                        style={{
-                          margin: 0,
-                          fontSize: "0.875rem",
-                          fontWeight: "500",
-                          color: "#333",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {chat.title}
-                      </h4>
-                      <p
-                        style={{
-                          margin: "0.25rem 0 0 0",
-                          fontSize: "0.75rem",
-                          color: "#666",
-                        }}
-                      >
+                      <h4 className="font-semibold truncate">{chat.title}</h4>
+                      <p className="text-xs text-gray-400 mt-1">
                         {formatDate(chat.updated_at)}
                       </p>
                       {chat.messages_aggregate?.aggregate?.count > 0 && (
-                        <p
-                          style={{
-                            margin: "0.25rem 0 0 0",
-                            fontSize: "0.75rem",
-                            color: "#888",
-                          }}
-                        >
+                        <p className="text-xs text-gray-400 mt-1">
                           {chat.messages_aggregate.aggregate.count} messages
                         </p>
                       )}
                     </>
                   )}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "0.25rem",
-                    marginLeft: "0.5rem",
-                  }}
-                >
+                </button>
+                <div className="flex items-center gap-2 ml-2">
                   {editingChatId !== chat.id && (
                     <button
                       onClick={(e) => handleEditChat(chat, e)}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "#999",
-                        cursor: "pointer",
-                        padding: "0.25rem",
-                        fontSize: "0.75rem",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.color = "#667eea";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.color = "#999";
-                      }}
+                      className="bg-none border-none text-gray-400 cursor-pointer p-2 transition-colors duration-200 hover:text-indigo-600"
                       title="Edit chat title"
                     >
                       ✏️
@@ -308,28 +173,15 @@ const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
                   )}
                   <button
                     onClick={(e) => handleDeleteChat(chat.id, e)}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "#999",
-                      cursor: "pointer",
-                      padding: "0.25rem",
-                      fontSize: "0.75rem",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.color = "#e74c3c";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.color = "#999";
-                    }}
+                    className="bg-none border-none text-gray-400 cursor-pointer p-2 transition-colors duration-200 hover:text-red-500"
                     title="Delete chat"
                   >
                     ×
                   </button>
                 </div>
-              </div>
-            </div>
-          ))
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>
