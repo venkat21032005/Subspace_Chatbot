@@ -7,27 +7,21 @@ const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
 
-  const handleCreateChat = async () => {
-    console.log('handleCreateChat called');
+    const handleCreateChat = async () => {
     setCreatingChat(true);
     try {
-      console.log('Attempting to create chat...');
-      const newChat = await createChat({ variables: { title: 'New Chat' } });
-      console.log('Received response from createChat:', newChat);
+      // Correctly call createChat with the variables object, not nested
+      const result = await createChat({ title: 'New Conversation' });
+      const newChat = result?.data?.insert_chats_one;
 
-      if (newChat?.data?.insert_chats_one) {
-        console.log('New chat created successfully:', newChat.data.insert_chats_one);
-        if (onNewChat) {
-          onNewChat(newChat.data.insert_chats_one);
-        }
-      } else {
-        console.error('Chat creation failed. Response:', newChat);
+      if (newChat && onNewChat) {
+        // Pass the new chat object directly to the parent
+        onNewChat(newChat);
       }
     } catch (err) {
-      console.error('An error occurred in handleCreateChat:', err);
+      console.error('Error creating chat:', err.message);
     } finally {
       setCreatingChat(false);
-      console.log('handleCreateChat finished');
     }
   };
 
