@@ -2,8 +2,23 @@ import React, { useState } from "react";
 import { useChats } from "../hooks/useChats";
 
 const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
-  const { chats, loading, error, createChat, deleteChat, updateChatTitle } =
-    useChats();
+  const { chats = [], loading, error, createChat, deleteChat, updateChatTitle } = useChats();
+  
+  // Handle error state
+  if (error) {
+    console.error('Error in ChatList:', error);
+    // Optionally show an error message to the user
+    return (
+      <div className="p-4 text-red-500">
+        Error loading chats. Please try refreshing the page.
+      </div>
+    );
+  }
+  
+  // Handle loading state
+  if (loading && chats.length === 0) {
+    return <div className="p-4 text-gray-500">Loading chats...</div>;
+  }
   const [creatingChat, setCreatingChat] = useState(false);
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState("");

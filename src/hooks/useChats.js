@@ -1,13 +1,29 @@
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_USER_CHATS } from '../graphql/queries';
 import { CREATE_CHAT, UPDATE_CHAT_TITLE, DELETE_CHAT } from '../graphql/mutations';
+import { useMemo } from 'react';
 
 export const useChats = () => {
   const { data, loading, error, refetch } = useQuery(GET_USER_CHATS, {
     errorPolicy: 'all',
     fetchPolicy: 'cache-and-network',
     notifyOnNetworkStatusChange: true,
+    onError: (error) => {
+      console.error('Error fetching chats:', error);
+    },
   });
+
+  // Transform the data to ensure it's always in the expected format
+  const chats = useMemo(() => {
+    if (!data?.chats) return [];
+    return data.chats.map(chat => ({
+      ...chat,
+      // Add a default messages array if not present
+      messages: chat.messages || [],
+      // Add a messageCount based on the messages array
+      messageCount: chat.messages?.length || 0
+    }));
+  }, [data]);
 
   const [createChatMutation] = useMutation(CREATE_CHAT, {
     refetchQueries: [{ query: GET_USER_CHATS }],

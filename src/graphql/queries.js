@@ -8,10 +8,8 @@ export const GET_USER_CHATS = gql`
       title
       created_at
       updated_at
-      messages_aggregate {
-        aggregate {
-          count
-        }
+      messages {
+        id
       }
     }
   }
