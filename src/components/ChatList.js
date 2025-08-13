@@ -8,16 +8,26 @@ const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
   const [editTitle, setEditTitle] = useState("");
 
   const handleCreateChat = async () => {
+    console.log('handleCreateChat called');
     setCreatingChat(true);
     try {
+      console.log('Attempting to create chat...');
       const newChat = await createChat({ variables: { title: 'New Chat' } });
-      if (newChat && onNewChat) {
-        onNewChat(newChat.data.insert_chats_one);
+      console.log('Received response from createChat:', newChat);
+
+      if (newChat?.data?.insert_chats_one) {
+        console.log('New chat created successfully:', newChat.data.insert_chats_one);
+        if (onNewChat) {
+          onNewChat(newChat.data.insert_chats_one);
+        }
+      } else {
+        console.error('Chat creation failed. Response:', newChat);
       }
     } catch (err) {
-      console.error('Error creating chat:', err);
+      console.error('An error occurred in handleCreateChat:', err);
     } finally {
       setCreatingChat(false);
+      console.log('handleCreateChat finished');
     }
   };
 
