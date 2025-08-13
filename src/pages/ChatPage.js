@@ -1,57 +1,64 @@
-import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import ChatList from '../components/ChatList';
-import ChatView from '../components/ChatView';
+import ChatWindow from '../components/ChatWindow';
+import Welcome from '../components/Welcome';
+import { useAuth } from '../contexts/AuthContext';
 
 const ChatPage = () => {
+  const { chatId } = useParams();
+  const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const [selectedChat, setSelectedChat] = useState(null);
+  const [selectedChatId, setSelectedChatId] = useState(chatId);
 
-  const handleSignOut = async () => {
-    await signOut();
-  };
+  useEffect(() => {
+    setSelectedChatId(chatId);
+  }, [chatId]);
 
-  const handleChatSelect = (chat) => {
-    setSelectedChat(chat);
+  const handleSelectChat = (id) => {
+    setSelectedChatId(id);
+    navigate(`/chat/${id}`);
   };
 
   const handleNewChat = (newChat) => {
-    setSelectedChat(newChat);
+    if (newChat && newChat.id) {
+      navigate(`/chat/${newChat.id}`);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   return (
-    <div className="chat-container">
-      <div className="chat-sidebar">
-        <div style={{ padding: '1rem', borderBottom: '1px solid #e0e0e0' }}>
-          <h3 style={{ margin: 0, marginBottom: '0.5rem' }}>Chats</h3>
-          <p style={{ fontSize: '0.875rem', color: '#666', margin: 0 }}>
-            Welcome, {user?.email}
-          </p>
-          <button 
+    <div className="flex h-screen bg-gray-800 text-white">
+      <div className="w-1/4 bg-gray-900 p-4 flex flex-col">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold">Chats</h1>
+          {user && <p className="text-sm text-gray-400">Welcome, {user.email}</p>}
+          <button
             onClick={handleSignOut}
-            style={{ 
-              marginTop: '1rem', 
-              padding: '0.5rem 1rem', 
-              background: '#dc3545', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '5px',
-              cursor: 'pointer',
-              fontSize: '0.875rem',
-            }}
+            className="w-full mt-2 bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
           >
             Sign Out
           </button>
         </div>
-        
-        <ChatList 
-          selectedChatId={selectedChat?.id}
-          onChatSelect={handleChatSelect}
-          onNewChat={handleNewChat}
-        />
+        <div className="flex-grow overflow-y-auto">
+          <ChatList
+            selectedChatId={selectedChatId}
+            onChatSelect={handleSelectChat}
+            onNewChat={handleNewChat}
+          />
+        </div>
       </div>
-      
-      <ChatView chat={selectedChat} />
+      <div className="w-3/4 flex flex-col">
+        {selectedChatId ? (
+          <ChatWindow key={selectedChatId} chatId={selectedChatId} />
+        ) : (
+          <Welcome />
+        )}
+      </div>
     </div>
   );
 };
