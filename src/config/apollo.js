@@ -7,13 +7,13 @@ import { nhost } from './nhost';
 
 // Create HTTP link for queries and mutations
 const httpLink = createHttpLink({
-  uri: process.env.REACT_APP_HASURA_GRAPHQL_URL,
+  uri: nhost.graphql.httpUrl,
 });
 
 // Create WebSocket link for subscriptions
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: process.env.REACT_APP_HASURA_GRAPHQL_WS_URL,
+    url: nhost.graphql.wsUrl,
     connectionParams: () => {
       const accessToken = nhost.auth.getAccessToken();
       return {

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSignInEmailPassword } from '@nhost/react';
 import { Link, useNavigate } from 'react-router-dom';
 import { validateEmail, validatePassword, sanitizeInput } from '../utils/validation';
+import { FaGithub } from 'react-icons/fa';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -121,6 +122,53 @@ const LoginForm = () => {
             Sign Up
           </Link>
         </p>
+        
+        <div style={{ 
+          textAlign: 'center', 
+          marginTop: '2rem', 
+          borderTop: '1px solid #e2e8f0', 
+          paddingTop: '1.5rem' 
+        }}>
+          <p style={{ 
+            color: '#4a5568', 
+            marginBottom: '1rem',
+            fontSize: '0.875rem'
+          }}>
+            View the source code on
+          </p>
+          <a 
+            href="https://github.com/venkat21032005/Subspace_Chatbot" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '10px',
+              color: '#ffffff',
+              textDecoration: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '9999px',
+              border: 'none',
+              transition: 'all 0.2s',
+              backgroundColor: '#1a1a1a',
+              fontWeight: '500',
+              fontSize: '1rem',
+              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+              ':hover': {
+                backgroundColor: '#333333',
+                transform: 'translateY(-1px)',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+              },
+              ':active': {
+                transform: 'translateY(0)'
+              }
+            }}
+          >
+            <FaGithub size={20} />
+            <span>GitHub</span>
+          </a>
+        </div>
       </form>
     </div>
   );
