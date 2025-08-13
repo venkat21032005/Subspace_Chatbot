@@ -1,7 +1,7 @@
+import React, { useMemo } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { GET_USER_CHATS } from '../graphql/queries';
 import { CREATE_CHAT, UPDATE_CHAT_TITLE, DELETE_CHAT } from '../graphql/mutations';
-import { useMemo } from 'react';
 
 export const useChats = () => {
   const { data, loading, error, refetch } = useQuery(GET_USER_CHATS, {
