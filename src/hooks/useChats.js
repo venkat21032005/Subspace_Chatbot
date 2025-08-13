@@ -1,82 +1,74 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
+import { useAuth } from '../contexts/AuthContext';
 import { GET_USER_CHATS } from '../graphql/queries';
 import { CREATE_CHAT, UPDATE_CHAT_TITLE, DELETE_CHAT } from '../graphql/mutations';
 
 export const useChats = () => {
+  const { user } = useAuth();
+
+  // Fetch chats for the logged-in user
   const { data, loading, error, refetch } = useQuery(GET_USER_CHATS, {
-    errorPolicy: 'all',
+    variables: { userId: user?.id },
+    skip: !user, // Skip query if user is not loaded
     fetchPolicy: 'cache-and-network',
-    notifyOnNetworkStatusChange: true,
-    onError: (error) => {
-      console.error('Error fetching chats:', error);
-    },
   });
 
-  // Transform the data to ensure it's always in the expected format
-  const chats = useMemo(() => {
-    if (!data?.chats) return [];
-    return data.chats.map(chat => ({
-      ...chat,
-      // Add a default messages array if not present
-      messages: chat.messages || [],
-      // Add a messageCount based on the messages array
-      messageCount: chat.messages?.length || 0
-    }));
-  }, [data]);
+  // Memoize the chats array to prevent unnecessary re-renders
+  const chats = useMemo(() => data?.chats || [], [data]);
 
+  // Mutation for creating a new chat
   const [createChatMutation] = useMutation(CREATE_CHAT, {
-    refetchQueries: [{ query: GET_USER_CHATS }],
-    errorPolicy: 'all',
+    // Refetch the user's chats after a new one is created
+    refetchQueries: [
+      { query: GET_USER_CHATS, variables: { userId: user?.id } },
+    ],
   });
 
-  const [updateChatTitleMutation] = useMutation(UPDATE_CHAT_TITLE, {
-    errorPolicy: 'all',
-  });
+  // Mutations for updating and deleting chats
+  const [updateChatTitleMutation] = useMutation(UPDATE_CHAT_TITLE);
+  const [deleteChatMutation] = useMutation(DELETE_CHAT);
 
-  const [deleteChatMutation] = useMutation(DELETE_CHAT, {
-    refetchQueries: [{ query: GET_USER_CHATS }],
-    errorPolicy: 'all',
-  });
-
-  const createChat = async (title = 'New Chat') => {
-    try {
-      const result = await createChatMutation({
-        variables: { title },
-      });
-      return result.data?.insert_chats_one;
-    } catch (error) {
-      console.error('Error creating chat:', error);
-      throw error;
+  // Wrapper function for creating a chat that injects the user_id
+  const createChat = (variables) => {
+    if (!user?.id) {
+      console.error('Authentication error: Cannot create chat without user ID.');
+      return Promise.reject(new Error('User is not authenticated.'));
     }
+    return createChatMutation({
+      variables: {
+        ...variables,
+        user_id: user.id, // Ensure user_id is always included
+      },
+    });
   };
 
-  const updateChatTitle = async (chatId, title) => {
-    try {
-      const result = await updateChatTitleMutation({
-        variables: { chatId, title },
-      });
-      return result.data?.update_chats_by_pk;
-    } catch (error) {
-      console.error('Error updating chat title:', error);
-      throw error;
-    }
+  // Wrapper for updating a chat title
+  const updateChatTitle = (chatId, title) => {
+    return updateChatTitleMutation({ variables: { chatId, title } });
   };
 
-  const deleteChat = async (chatId) => {
-    try {
-      const result = await deleteChatMutation({
-        variables: { chatId },
-      });
-      return result.data?.delete_chats_by_pk;
-    } catch (error) {
-      console.error('Error deleting chat:', error);
-      throw error;
-    }
+  // Wrapper for deleting a chat
+  const deleteChat = (chatId) => {
+    return deleteChatMutation({ 
+      variables: { chatId },
+      // Optimistically update the cache to remove the chat immediately
+      update: (cache) => {
+        cache.modify({
+          fields: {
+            chats(existingChats = [], { readField }) {
+              return existingChats.filter(
+                (chatRef) => chatId !== readField('id', chatRef)
+              );
+            },
+          },
+        });
+      },
+    });
   };
 
   return {
-    chats: data?.chats || [],
+    chats,
     loading,
     error,
     refetch,
