@@ -7,15 +7,14 @@ const ChatList = ({ selectedChatId, onChatSelect, onNewChat }) => {
   const [editingChatId, setEditingChatId] = useState(null);
   const [editTitle, setEditTitle] = useState("");
 
-    const handleCreateChat = async () => {
+  const handleCreateChat = async () => {
     setCreatingChat(true);
     try {
-      // Correctly call createChat with the variables object, not nested
-      const result = await createChat({ title: 'New Conversation' });
-      const newChat = result?.data?.insert_chats_one;
+      // Await the new chat object directly from the updated createChat hook
+      const newChat = await createChat({ title: 'New Conversation' });
 
       if (newChat && onNewChat) {
-        // Pass the new chat object directly to the parent
+        // Pass the fully formed new chat object to the parent to trigger navigation
         onNewChat(newChat);
       }
     } catch (err) {

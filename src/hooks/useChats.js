@@ -30,17 +30,21 @@ export const useChats = () => {
   const [deleteChatMutation] = useMutation(DELETE_CHAT);
 
   // Wrapper function for creating a chat that injects the user_id
-  const createChat = (variables) => {
+  const createChat = async (variables) => {
     if (!user?.id) {
       console.error('Authentication error: Cannot create chat without user ID.');
       return Promise.reject(new Error('User is not authenticated.'));
     }
-    return createChatMutation({
+
+    const { data } = await createChatMutation({
       variables: {
         ...variables,
-        user_id: user.id, // Ensure user_id is always included
+        user_id: user.id,
       },
     });
+
+    // Return the newly created chat object so the caller can navigate after it's ready
+    return data?.insert_chats_one;
   };
 
   // Wrapper for updating a chat title

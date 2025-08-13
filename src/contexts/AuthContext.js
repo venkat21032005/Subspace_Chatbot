@@ -1,5 +1,5 @@
-import React, { createContext, useContext } from 'react';
-import { useAuthenticationStatus, useUserData, useSignOut } from '@nhost/react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { nhost } from '../config/nhost';
 
 const AuthContext = createContext();
 
@@ -12,14 +12,30 @@ export const useAuth = () => {
 };
 
 const AuthProvider = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuthenticationStatus();
-  const user = useUserData();
-  const { signOut } = useSignOut();
+  const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = nhost.auth.onAuthStateChanged((event, session) => {
+      setUser(session?.user || null);
+      setIsLoading(false);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  const signOut = async () => {
+    await nhost.auth.signOut();
+    setUser(null);
+  };
 
   const value = {
-    isAuthenticated,
-    isLoading,
     user,
+    // isAuthenticated is true if the user object is not null
+    isAuthenticated: !!user,
+    isLoading,
     signOut,
   };
 
