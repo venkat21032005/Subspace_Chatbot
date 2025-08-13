@@ -86,9 +86,9 @@ export const sanitizeInput = (input) => {
     return '';
   }
   
-  // Remove potentially dangerous characters and normalize whitespace
+  // Keep only printable ASCII characters and common whitespace
   return input
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters
+    .replace(/[^\x20-\x7E\t\n\r]/g, '') // Keep only printable ASCII and basic whitespace
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim();
 };
