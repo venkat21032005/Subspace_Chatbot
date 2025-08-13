@@ -1,100 +1,89 @@
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
 import { useMessages } from '../hooks/useMessages';
-import MessageBubble from './MessageBubble';
-import MessageInput from './MessageInput';
-import Welcome from './Welcome'; // Assuming Welcome component exists for the initial screen
+import ChatMessage from './ChatMessage'; // Import the new message component
 
-const ChatView = React.memo(({ chatId }) => {
-  const { messages, chat, loading, error, sendMessage, sendingMessage } = useMessages(chatId);
+const ChatView = ({ chatId }) => {
+  const { chat, loading, error, sendMessage } = useMessages(chatId);
+  const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef(null);
-  const messagesContainerRef = useRef(null);
-  const shouldAutoScrollRef = useRef(true);
 
-  const memoizedMessages = useMemo(() => messages, [messages]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'auto' }); // Use 'auto' for instant scroll
+  };
 
   useEffect(() => {
-    if (shouldAutoScrollRef.current && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [memoizedMessages]);
+    scrollToBottom();
+  }, [chat?.messages]);
 
-  const handleScroll = useCallback(() => {
-    if (messagesContainerRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-      shouldAutoScrollRef.current = isAtBottom;
-    }
-  }, []);
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
 
-  const handleSendMessage = async (content) => {
     try {
-      await sendMessage(content);
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      throw error;
+      setNewMessage(''); // Clear input immediately for better UX
+      await sendMessage(newMessage);
+    } catch (err) {
+      console.error('Failed to send message:', err);
+      setNewMessage(newMessage); // Restore message on error
     }
   };
 
-  // Case: Navigated to a chat ID but data is not loaded yet
-  if (loading && !chat) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-gray-400">Loading chat...</p>
-      </div>
-    );
-  }
-
-  // Case: No chat selected at all
-  if (!chatId || !chat) {
-    return <Welcome />;
+  if (loading) {
+    return <div className="flex items-center justify-center h-full text-gray-400">Loading conversation...</div>;
   }
 
   if (error) {
-    return (
-      <div className="flex items-center justify-center h-full text-red-500">
-        <p>Error: {error.message}</p>
-      </div>
-    );
+    return <div className="flex items-center justify-center h-full text-red-400">Error: {error.message}</div>;
+  }
+
+  if (!chat) {
+    return <div className="flex items-center justify-center h-full text-gray-400">Select a chat to begin.</div>;
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
-      <div className="p-4 border-b border-gray-700 shadow-md">
-        <h2 className="text-xl font-bold">{chat.title}</h2>
-        <p className="text-sm text-gray-400">{memoizedMessages.length} messages</p>
+    <div className="flex flex-col h-full bg-black bg-opacity-20 backdrop-blur-sm">
+      {/* Chat Header */}
+      <header className="flex-shrink-0 p-4 border-b border-gray-700 bg-black bg-opacity-30">
+        <h2 className="text-lg font-semibold text-white truncate">{chat.title}</h2>
+      </header>
+
+      {/* Messages Area */}
+      <div className="flex-1 p-6 overflow-y-auto">
+        <div className="max-w-4xl mx-auto">
+          {chat.messages && chat.messages.length > 0 ? (
+            chat.messages.map((message) => (
+              <ChatMessage key={message.id} message={message} />
+            ))
+          ) : (
+            <div className="text-center text-gray-500">No messages in this chat yet.</div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      <div
-        className="flex-grow p-4 overflow-y-auto"
-        ref={messagesContainerRef}
-        onScroll={handleScroll}
-      >
-        {memoizedMessages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500">
-            <div className="text-4xl mb-4">ðŸ¤–</div>
-            <h3 className="text-lg font-semibold">Start a conversation!</h3>
-            <p>Send your first message to begin chatting.</p>
-          </div>
-        ) : (
-          <>
-            {memoizedMessages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
-            ))}
-            <div ref={messagesEndRef} />
-          </>
-        )}
-      </div>
-
-      <div className="p-4 border-t border-gray-700">
-        <MessageInput
-          onSendMessage={handleSendMessage}
-          disabled={sendingMessage}
-          placeholder={sendingMessage ? 'Sending...' : 'Type your message...'}
-        />
+      {/* Message Input */}
+      <div className="flex-shrink-0 p-6 border-t border-gray-800 bg-black bg-opacity-20">
+        <div className="max-w-4xl mx-auto">
+          <form onSubmit={handleSendMessage} className="flex items-center bg-gray-800 rounded-xl p-2 border border-gray-700 focus-within:ring-2 focus-within:ring-blue-500">
+            <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message..."
+              className="flex-1 p-2 bg-transparent focus:outline-none text-white placeholder-gray-400"
+            />
+            <button
+              type="submit"
+              className="px-5 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors duration-200"
+              disabled={!newMessage.trim() || loading}
+            >
+              Send
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
-});
+};
 
 export default ChatView;
