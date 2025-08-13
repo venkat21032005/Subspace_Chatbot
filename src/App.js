@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { NhostProvider } from "@nhost/react";
 import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "./config/apollo";
@@ -22,16 +22,9 @@ function App() {
                 <Routes>
                   <Route path="/login" element={<LoginPage key="login" />} />
                   <Route path="/signup" element={<SignupPage key="signup" />} />
+                  <Route path="/" element={<Navigate to="/chat" />} />
                   <Route
-                    path="/"
-                    element={
-                      <ProtectedRoute>
-                        <ChatPage />
-                      </ProtectedRoute>
-                    }
-                  />
-                  <Route
-                    path="/chat/:chatId"
+                    path="/chat"
                     element={
                       <ProtectedRoute>
                         <ChatPage />
