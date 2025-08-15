@@ -86,7 +86,7 @@ const SignupForm = () => {
     <div className="auth-container">
       <form className="auth-form" onSubmit={handleSubmit}>
         <h2
-          style={{ textAlign: "center", marginBottom: "2rem", color: "#333" }}
+          style={{ textAlign: "center", marginBottom: "2rem", color: "var(--text)" }}
         >
           Sign Up
         </h2>
@@ -200,7 +200,7 @@ const SignupForm = () => {
           Already have an account?{" "}
           <Link
             to="/login"
-            style={{ color: "#667eea", textDecoration: "none" }}
+            style={{ color: "var(--primary)", textDecoration: "none" }}
           >
             Sign In
           </Link>
