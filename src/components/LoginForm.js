@@ -50,7 +50,7 @@ const LoginForm = () => {
   return (
     <div className="auth-container">
       <form className="auth-form" onSubmit={handleSubmit}>
-        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: '#333' }}>
+        <h2 style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--text)' }}>
           Sign In
         </h2>
         
@@ -118,7 +118,7 @@ const LoginForm = () => {
 
         <p style={{ textAlign: 'center', marginTop: '1rem' }}>
           Don't have an account?{' '}
-          <Link to="/signup" style={{ color: '#667eea', textDecoration: 'none' }}>
+          <Link to="/signup" style={{ color: 'var(--primary)', textDecoration: 'none' }}>
             Sign Up
           </Link>
         </p>
@@ -130,7 +130,7 @@ const LoginForm = () => {
           paddingTop: '1.5rem' 
         }}>
           <p style={{ 
-            color: '#4a5568', 
+            color: 'var(--muted)',
             marginBottom: '1rem',
             fontSize: '0.875rem'
           }}>
@@ -145,24 +145,16 @@ const LoginForm = () => {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '10px',
-              color: '#ffffff',
+              color: 'var(--text)',
               textDecoration: 'none',
               padding: '0.75rem 1.5rem',
               borderRadius: '9999px',
-              border: 'none',
+              border: '1px solid var(--card-border)',
               transition: 'all 0.2s',
-              backgroundColor: '#1a1a1a',
+              backgroundColor: 'var(--bg-soft)',
               fontWeight: '500',
               fontSize: '1rem',
-              boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
-              ':hover': {
-                backgroundColor: '#333333',
-                transform: 'translateY(-1px)',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-              },
-              ':active': {
-                transform: 'translateY(0)'
-              }
+              boxShadow: 'var(--shadow)',
             }}
           >
             <FaGithub size={20} />

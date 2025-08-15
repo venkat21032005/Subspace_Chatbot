@@ -8,8 +8,9 @@ export const GET_USER_CHATS = gql`
       title
       created_at
       updated_at
-      messages {
+      messages(order_by: { created_at: desc }, limit: 1) {
         id
+        content
       }
     }
   }
